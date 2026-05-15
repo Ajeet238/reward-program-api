@@ -58,7 +58,6 @@ GET http://localhost:8080/rewards/1?startDate=2023-01-01&endDate=2023-03-31
   },
   "totalPoints": 70
 }
-```
 
 ## Error handling
 
@@ -71,3 +70,4 @@ Run unit and controller tests with:
 ```bash
 mvn test
 ```
+
