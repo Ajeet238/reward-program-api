@@ -1,7 +1,9 @@
 package com.example.rewardsprogram.service;
 
 import com.example.rewardsprogram.dto.RewardsResponse;
+import com.example.rewardsprogram.exception.CustomerNotFoundException;
 import com.example.rewardsprogram.model.Transaction;
+import com.example.rewardsprogram.repository.CustomerRepository;
 import com.example.rewardsprogram.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,12 @@ public class RewardsService {
     private static final int SECOND_THRESHOLD = 100;
 
     private final TransactionRepository transactionRepository;
+    private final CustomerRepository customerRepository;
 
     @Autowired
-    public RewardsService(TransactionRepository transactionRepository) {
+    public RewardsService(TransactionRepository transactionRepository, CustomerRepository customerRepository) {
         this.transactionRepository = transactionRepository;
+        this.customerRepository = customerRepository;
     }
 
     /**
@@ -55,6 +59,10 @@ public class RewardsService {
      * @return rewards summary with monthly and total points
      */
     public RewardsResponse getRewardsForCustomer(Long customerId, LocalDate startDate, LocalDate endDate) {
+        if (customerId == null || !customerRepository.existsById(customerId)) {
+            throw new CustomerNotFoundException(customerId);
+        }
+
         List<Transaction> transactions = transactionRepository.findByCustomerIdAndDateBetween(customerId, startDate, endDate);
 
         Map<String, Integer> monthlyPoints = new LinkedHashMap<>();

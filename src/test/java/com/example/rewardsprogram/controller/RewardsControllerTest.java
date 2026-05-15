@@ -2,6 +2,7 @@ package com.example.rewardsprogram.controller;
 
 import com.example.rewardsprogram.dto.RewardsResponse;
 import com.example.rewardsprogram.service.RewardsService;
+import com.example.rewardsprogram.exception.CustomerNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -42,5 +43,20 @@ class RewardsControllerTest {
                 .andExpect(jsonPath("$.customerId").value(1))
                 .andExpect(jsonPath("$.totalPoints").value(70))
                 .andExpect(jsonPath("$.monthlyPoints['2023-01']").value(40));
+    }
+
+    @Test
+    void getRewards_returnsNotFoundWhenCustomerMissing() throws Exception {
+        LocalDate startDate = LocalDate.of(2023, 1, 1);
+        LocalDate endDate = LocalDate.of(2023, 3, 31);
+
+        when(rewardsService.getRewardsForCustomer(eq(99L), eq(startDate), eq(endDate)))
+                .thenThrow(new CustomerNotFoundException(99L));
+
+        mockMvc.perform(get("/rewards/99")
+                        .param("startDate", "2023-01-01")
+                        .param("endDate", "2023-03-31"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Customer with id 99 not found"));
     }
 }
